@@ -183,7 +183,7 @@
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
 
-        let tokenizer = await loadTokenizer('./mistral-v7', false);
+        let tokenizer = await loadTokenizer('mistral-v7', false);
 
         async function loadTokenizer(tokenizerPath, useAuthToken) {
             try {
