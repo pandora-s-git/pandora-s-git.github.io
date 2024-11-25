@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mistral Transformers Tokenizers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+            color: #fff;
+            width: 100%;
+            flex-direction: column;
+        }
+        .input-container {
+            padding: 10px;
+            font-size: 14px;
+            min-width: 30vw;
+            max-width: 60vw;
+            box-sizing: border-box;
+            min-height: 40px;
+            outline: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #1e1e1e;
+            color: #fff;
+            border-radius: 5px;
+            overflow-wrap: break-word;
+            line-height: 1.5;
+        }
+        .highlight {
+            border-radius: 4px;
+            padding: 2px;
+            margin: 1px;
+        }
+        .token-container {
+            display: inline-block;
+            text-align: center;
+            margin: 5px;
+            position: relative;
+        }
+        .token-id {
+            font-size: 10px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        .input-section {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: orange;
+        }
+
+        .tokens-display {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+            width: 60vw;
+            font-size: 12px;
+        }
+        .dropdown-container {
+            margin-top: 5px;
+        }
+        .dropdown {
+            padding: 5px;
+            background-color: #1e1e1e;
+            color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .input-box {
+            padding: 5px;
+            background-color: #1e1e1e;
+            color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .error-message {
+            color: red;
+            margin-top: 20px;
+        }
+        .examples-container {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        .example {
+            font-size: 0.9em;
+            flex: 1 1 calc(33.333% - 20px);
+            margin: 4px;
+            padding: 8px;
+            background-color: #1e1e1e;
+            color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .example:hover{
+            background-color: #2e2e2e;
+        }
+        footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            padding: 3px 0px;
+            background-color: transparent;
+            color: #9e9e9e;
+            font-size: 12px;
+            border-top: none;
+        }
+        footer a {
+            color: #b04100;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: orange">Tokenize!</h1>
+    <div class="dropdown-container">
+        <select class="dropdown" id="tokenizerDropdown">
+            <option value="mistral-v7">Mistral V7</option>
+            <option value="mistral-v3">Mistral V3</option>
+            <option value="mistral-v1">Mistral V1</option>
+        </select>
+    </div>
+    <section class="input-section">
+        <div class="token-container">
+            <span class="highlight">&lt;s&gt;</span>
+        </div>
+        <div class="input-container" contenteditable="true" id="highlightInput" placeholder="Type something..."></div>
+    </section>
+    <div class="tokens-display" id="tokensDisplay"></div>
+    <div class="error-message" id="errorMessage"></div>
+    <div class="examples-container">
+        <div class="example" data-example=" [INST] user message [/INST] assistant message</s>" data-tokenizer="mistral-v7">One Shot with Mistral V7</div>
+        <div class="example" data-example="[INST] user message[/INST] assistant message</s>" data-tokenizer="mistral-v3">One Shot with Mistral V3</div>
+        <div class="example" data-example="[INST] user message[/INST] assistant message</s>" data-tokenizer="mistral-v1">One Shot with Mistral V1</div>
+        <div class="example" data-example=" [INST] user message [/INST] assistant message</s> [INST] new user message [/INST] new assistant message</s>" data-tokenizer="mistral-v1">Simple Chat with Mistral V1</div>
+        <div class="example" data-example="[INST] user message[/INST] assistant message</s>[INST] new user message[/INST] new assistant message</s>" data-tokenizer="mistral-v3">Simple Chat with Mistral V3</div>
+        <div class="example" data-example="[INST] user message[/INST] assistant message</s>[INST] new user message[/INST] new assistant message</s>" data-tokenizer="mistral-v7">Simple Chat with Mistral V7</div>
+        <div class="example" data-example="[SYSTEM_PROMPT] system prompt[/SYSTEM_PROMPT][INST] user message[/INST] assistant message</s>[INST] new user message[/INST] new assistant message</s>" data-tokenizer="mistral-v7">System Prompt with Mistral V7</div>
+    </div>
+    <footer>
+        <p>This is a work in progress. Contribution is welcome, repository <a href="https://github.com/your-github-url">here</a></p>
+    </footer>
+    <script type="module">
+        import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2';
+
+        env.allowLocalModels = true;
+        env.localModelPath = "/tokenizers/";
+
+        const input = document.getElementById('highlightInput');
+        const tokensDisplay = document.getElementById('tokensDisplay');
+        const tokenizerDropdown = document.getElementById('tokenizerDropdown');
+        const errorMessage = document.getElementById('errorMessage');
+
+        const colors = ['#ff9b00', '#001bff', '#ff0000', '#9b00ff', '#00ff17', '#00e4ff', '#e4ff00', '#ff00d1'];
+
+        function hexToRgba(hex, alpha) {
+            hex = hex.replace(/^#/, '');
+            let bigint = parseInt(hex, 16);
+            let r = (bigint >> 16) & 255;
+            let g = (bigint >> 8) & 255;
+            let b = bigint & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        let tokenizer = await loadTokenizer('./mistral-v7', false);
+
+        async function loadTokenizer(tokenizerPath, useAuthToken) {
+            try {
+                return await AutoTokenizer.from_pretrained(tokenizerPath, { useAuthToken });
+            } catch (error) {
+                errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
+                throw error;
+            }
+        }
+
+        tokenizerDropdown.addEventListener('change', async () => {
+            const tokenizerPath = tokenizerDropdown.value;
+            try {
+                tokenizer = await loadTokenizer(`./${tokenizerPath}`, false);
+                triggerInputEvent();
+            } catch (error) {
+                errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
+            }
+        });
+
+        function triggerInputEvent() {
+            const event = new Event('input', { bubbles: true });
+            input.dispatchEvent(event);
+        }
+
+        input.addEventListener('input', async () => {
+            errorMessage.textContent = '';
+            if (input.textContent === ""){
+                tokensDisplay.innerHTML = "";
+                return;
+            }
+
+            const text = input.textContent.replace(/\u200B/g, '').replace(/<0x0A>/g, '\n');
+
+            if (!tokenizer) return;
+
+            console.log(text)
+            const tokens = tokenizer.tokenize("<s>"+text).slice(1);
+            console.log(tokens)
+            if (tokens[tokens.length - 1] === "<0x0A>") {
+                tokens.pop();
+            }
+            const tokenIds = tokenizer.encode(text).slice(1);
+            console.log(tokenIds)
+
+            let tokenListHTML = `
+                        <div class="token-container">
+                            <span class="highlight" style="color: orange;">&lt;s&gt;</span>
+                            <div class="token-id">1</div>
+                        </div>
+                    `;
+            let highlightedText = '';
+
+            tokens.forEach((token, index) => {
+                if (token !== '') {
+                    const color = colors[(index + 1) % colors.length];
+                    let highlightedToken = token;
+
+                    if (token === '<s>' || token === '</s>') {
+                        highlightedToken = `&lt;${token.slice(1, -1)}&gt;`;
+                    }else if (token === '</'){
+                        highlightedToken = `&lt;/` + token.slice(1, -1);
+                    }
+
+                    let highlightedTokenInput = highlightedToken.replace(/<0x0A>/g, '\n\u200B').replace(/▁/g, ' ');
+                    let highlightedTokenToId = highlightedToken.replace(/<0x0A>/g, '\\n').replace(/ /g, ' ');
+
+                    tokenListHTML += `
+                        <div class="token-container">
+                            <span class="highlight" style="color: ${color};">${highlightedTokenToId}</span>
+                            <div class="token-id">${tokenIds[index]}</div>
+                        </div>
+                    `;
+
+                    highlightedText += `<span class="highlight" style="background-color: ${hexToRgba(color, 0.3)};">${highlightedTokenInput}</span>`;
+                }
+            });
+
+            tokensDisplay.innerHTML = tokenListHTML;
+            input.innerHTML = highlightedText;
+
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(input);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        });
+
+        input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        input.innerHTML += '\n';
+        e.preventDefault();
+
+        const emptyTextNode = document.createTextNode('\u200b');
+        input.appendChild(emptyTextNode);
+        const range = document.createRange();
+        const selection = window.getSelection();
+        range.setStart(emptyTextNode, 1);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+});
+
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            document.execCommand('insertText', false, pastedText);
+        });
+
+        document.querySelectorAll('.example').forEach(example => {
+            example.addEventListener('click', () => {
+                const exampleText = example.getAttribute('data-example');
+                const tokenizerValue = example.getAttribute('data-tokenizer');
+                tokenizerDropdown.value = tokenizerValue;
+                input.textContent = exampleText;
+                triggerInputEvent();
+            });
+        });
+    </script>
+</body>
+</html>
