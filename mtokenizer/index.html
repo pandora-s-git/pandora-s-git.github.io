@@ -197,7 +197,7 @@
         tokenizerDropdown.addEventListener('change', async () => {
             const tokenizerPath = tokenizerDropdown.value;
             try {
-                tokenizer = await loadTokenizer(`./${tokenizerPath}`, false);
+                tokenizer = await loadTokenizer(tokenizerPath, false);
                 triggerInputEvent();
             } catch (error) {
                 errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
