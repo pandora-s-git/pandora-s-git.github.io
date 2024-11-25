@@ -299,12 +299,12 @@
         });
 
         document.querySelectorAll('.example').forEach(example => {
-            example.addEventListener('click', () => {
+            example.addEventListener('click', async () => {
                 const exampleText = example.getAttribute('data-example');
                 const tokenizerValue = example.getAttribute('data-tokenizer');
                 tokenizerDropdown.value = tokenizerValue;
-                input.textContent = exampleText;
                 tokenizer = await loadTokenizer(tokenizerValue);
+                input.textContent = exampleText;
                 triggerInputEvent();
             });
         });
