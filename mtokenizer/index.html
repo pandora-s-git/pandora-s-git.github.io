@@ -212,9 +212,6 @@
         }
 
         input.addEventListener('input', async () => {
-            errorMessage.textContent = 'Tokenizing...';
-            errorMessage.style.color = 'yellow';
-
             if (input.textContent === ""){
                 tokensDisplay.innerHTML = "";
                 return;
@@ -223,6 +220,9 @@
             const text = input.textContent.replace(/\u200B/g, '').replace(/<0x0A>/g, '\n');
 
             if (!tokenizer) return;
+
+            errorMessage.textContent = 'Tokenizing...';
+            errorMessage.style.color = 'yellow';
 
             console.log(text)
             const tokens = tokenizer.tokenize("<s>"+text).slice(1);
