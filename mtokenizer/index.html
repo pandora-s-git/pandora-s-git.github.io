@@ -192,7 +192,7 @@
                 const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath);
                 errorMessage.textContent = `Tokenizer ${tokenizerPath} loaded.`;
                 errorMessage.style.color = 'green';
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 500));
                 return tokenizer;
             } catch (error) {
                 errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
@@ -213,7 +213,9 @@
         }
 
         input.addEventListener('input', async () => {
-            errorMessage.textContent = '';
+            errorMessage.textContent = 'Tokenizing...';
+            errorMessage.style.color = 'yellow';
+
             if (input.textContent === ""){
                 tokensDisplay.innerHTML = "";
                 return;
@@ -274,6 +276,9 @@
             range.collapse(false);
             selection.removeAllRanges();
             selection.addRange(range);
+
+            errorMessage.textContent = 'Tokenized!';
+            errorMessage.style.color = 'green';
         });
 
         input.addEventListener('keydown', (e) => {
