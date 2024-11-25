@@ -183,13 +183,19 @@
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
 
-        let tokenizer = await loadTokenizer('mistral-v7', false);
+        let tokenizer = await loadTokenizer('mistral-v7');
 
-        async function loadTokenizer(tokenizerPath, useAuthToken) {
+        async function loadTokenizer(tokenizerPath) {
+            errorMessage.textContent = 'Loading tokenizer...';
+            errorMessage.style.color = 'yellow';
             try {
-                return await AutoTokenizer.from_pretrained(tokenizerPath, { useAuthToken });
+                const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath);
+                errorMessage.textContent = `Tokenizer ${tokenizerPath} loaded.`;
+                errorMessage.style.color = 'green';
+                return tokenizer;
             } catch (error) {
                 errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
+                errorMessage.style.color = 'red';
                 throw error;
             }
         }
@@ -197,10 +203,11 @@
         tokenizerDropdown.addEventListener('change', async () => {
             const tokenizerPath = tokenizerDropdown.value;
             try {
-                tokenizer = await loadTokenizer(tokenizerPath, false);
+                tokenizer = await loadTokenizer(tokenizerPath);
                 triggerInputEvent();
             } catch (error) {
                 errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
+                errorMessage.style.color = 'red';
             }
         });
 
