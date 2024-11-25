@@ -192,6 +192,7 @@
                 const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath);
                 errorMessage.textContent = `Tokenizer ${tokenizerPath} loaded.`;
                 errorMessage.style.color = 'green';
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 return tokenizer;
             } catch (error) {
                 errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
@@ -202,13 +203,8 @@
 
         tokenizerDropdown.addEventListener('change', async () => {
             const tokenizerPath = tokenizerDropdown.value;
-            try {
-                tokenizer = await loadTokenizer(tokenizerPath);
-                triggerInputEvent();
-            } catch (error) {
-                errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
-                errorMessage.style.color = 'red';
-            }
+            tokenizer = await loadTokenizer(tokenizerPath);
+            triggerInputEvent();
         });
 
         function triggerInputEvent() {
@@ -308,6 +304,7 @@
                 const tokenizerValue = example.getAttribute('data-tokenizer');
                 tokenizerDropdown.value = tokenizerValue;
                 input.textContent = exampleText;
+                tokenizer = await loadTokenizer(tokenizerValue);
                 triggerInputEvent();
             });
         });
