@@ -192,7 +192,6 @@
                 const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath);
                 errorMessage.textContent = `Tokenizer ${tokenizerPath} loaded.`;
                 errorMessage.style.color = 'green';
-                await new Promise(resolve => setTimeout(resolve, 500));
                 return tokenizer;
             } catch (error) {
                 errorMessage.textContent = `Error loading tokenizer: ${error.message}`;
