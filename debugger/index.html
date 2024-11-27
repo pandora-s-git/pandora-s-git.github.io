@@ -346,7 +346,7 @@
                     console.log(top_logprobs)
 
                     const tooltipContent = top_logprobs.map(({ token, logprob }) => {
-                        const prob = Math.exp(logprob).toFixed(2);
+                        const prob = Math.exp(logprob).toFixed(4);
                         return `${token}: ${prob*100}%`;
                     }).join('<br>');
 
