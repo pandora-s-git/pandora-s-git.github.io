@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #181818;
+        }
+        .chat-container {
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background: #0c0c0c;
+            color: rgb(255, 123, 0);
+            padding: 5px;
+            text-align: center;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-description {
+            background: #0c0c0c;
+            color: rgb(255, 123, 0);
+            padding: 5px;
+            text-align: center;
+            font-size: 0.9em;
+            border-top: 1px solid #2d2d2d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-messages {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 60%;
+            word-wrap: break-word;
+            text-align: justify;
+        }
+        .user-message {
+            background: #ffa200;
+            text-align: right;
+            margin-left: auto;
+        }
+        .bot-message {
+            background: #434343;
+            text-align: left;
+            color: white;
+            margin-right: auto;
+        }
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #2d2d2d;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+            background: #3c3c3c;
+            color: white;
+        }
+        .chat-input button {
+            padding: 10px;
+            background: #ffa500;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .token {
+            margin: 0px;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+        .token-tooltip {
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        .token:hover .token-tooltip {
+            display: block;
+        }
+        .toggle-button {
+            width: 8%;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            margin-right: 0px;
+        }
+        .toggle-button.on {
+            background: #4caf50;
+            color: white;
+            margin-right: 0px;
+        }
+        .toggle-button.off {
+            background: #f44336;
+            color: white;
+            margin-right: 0px;
+        }
+        .highlight-hidden .token {
+            background-color: transparent !important;
+            cursor: default !important;
+        }
+        .highlight-hidden .token-tooltip {
+            display: none !important;
+        }
+        .settings-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 5px 30px 5px;
+            background: #0c0c0c;
+            flex-wrap: wrap;
+        }
+        .settings-container .setting {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 5px;
+        }
+        .settings-container input {
+            width: 150px;
+            padding: 5px;
+            border: none;
+            outline: none;
+            background: #3c3c3c;
+            color: white;
+            text-align: center;
+        }
+        .settings-container label {
+            color: rgb(255, 123, 0);
+            margin-bottom: 0px;
+        }
+        .settings-container .value-label {
+            margin-top: 0px;
+            color: rgb(255, 123, 0);
+        }
+        .footer {
+            background: #0c0c0c;
+            color: rgb(255, 123, 0);
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 0.8em;
+        }
+        .footer a {
+            color: rgb(255, 179, 108);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: rgb(255, 216, 142);
+        }
+
+        .api-key-input, .model-input {
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .api-key-input input, .model-input input {
+            width: 200px;
+            padding: 5px;
+            border: none;
+            outline: none;
+            background: #3c3c3c;
+            color: white;
+            text-align: center;
+        }
+        .api-key-input label, .model-input label {
+            color: rgb(255, 123, 0);
+            margin-bottom: 5px;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+            padding: 0px;
+            background: transparent;
+            border-bottom: 1px solid #2d2d2d;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="api-key-input">
+                <label for="api-key">HF API Token</label>
+                <input type="text" id="api-key" placeholder="Enter your API Key">
+            </div>
+            <div><h1>Debug!</h1></div>
+            <div class="model-input">
+                <label for="hf-model">HF Model</label>
+                <input type="text" id="hf-model" placeholder="Enter your HF Model" value="mistralai/Mixtral-8x7B-Instruct-v0.1">
+            </div>
+        </div>
+        <div class="chat-description">
+            <div>
+                Current UIs are lackluster!<br>
+                This is a simple POC to show how one could make an amazing debugging UI for LLM evaluation and study. Here we are using HF to call a model and making use of <strong>logprobs</strong> to be able to display the probability of each token as well as the other candidates at each step.<br><br>The objective is to make it possible to easily study a model and the impact of the sampler settings. There is a lot to be done to improve current UIs and make them more <strong>developer-friendly—or even to empower the user</strong>!<br>
+                You can click on <strong>"Show Highlights"</strong> to see the tokenized messages, their probabilities, and you can hover over the tokens to see the other candidates!
+            </div>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="error-message" id="error-message"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type a message..." onkeypress="window.handleKeyPress(event)">
+            <button onclick="window.sendMessage()">Send</button>
+            <button onclick="window.clearHistory()">Clear History</button>
+            <button class="toggle-button off" id="toggle-button" onclick="window.toggleHighlights()">Show Highlights</button>
+        </div>
+        <div class="settings-container">
+            <div class="setting">
+                <label for="temperature">Temperature</label>
+                <input type="range" id="temperature" value="0.3" step="0.05" min="0" max="2">
+                <span id="temperature-value" class="value-label">0.3</span>
+            </div>
+            <div class="setting">
+                <label for="frequency-penalty">Frequency Penalty</label>
+                <input type="range" id="frequency-penalty" value="0" step="0.05" min="-2" max="2">
+                <span id="frequency-penalty-value" class="value-label">0</span>
+            </div>
+            <div class="setting">
+                <label for="presence-penalty">Presence Penalty</label>
+                <input type="range" id="presence-penalty" value="0" step="0.05" min="-2" max="2">
+                <span id="presence-penalty-value" class="value-label">0</span>
+            </div>
+            <div class="setting">
+                <label for="top-p">Top P</label>
+                <input type="range" id="top-p" value="0.95" step="0.05" min="0" max="1">
+                <span id="top-p-value" class="value-label">0.95</span>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        This chat interface is a work in progress. Some features, especially the penalty sampling settings seem to be broken and exhibit unexpected behaviors, feel free to contribute.
+        <a href="https://github.com/pandora-s-git/pandora-s-git.github.io/tree/main/debugger" target="_blank">Repo here.</a>
+    </div>
+    <script type="module">
+        import { HfInference } from "https://cdn.jsdelivr.net/npm/@huggingface/inference@2.8.1/+esm";
+
+        let client = new HfInference(document.getElementById('api-key').value);
+        let showHighlights = false;
+        let conversationHistory = [];
+
+        document.getElementById('temperature').addEventListener('input', function() {
+            document.getElementById('temperature-value').textContent = this.value;
+        });
+
+        document.getElementById('frequency-penalty').addEventListener('input', function() {
+            document.getElementById('frequency-penalty-value').textContent = this.value;
+        });
+
+        document.getElementById('presence-penalty').addEventListener('input', function() {
+            document.getElementById('presence-penalty-value').textContent = this.value;
+        });
+
+        document.getElementById('top-p').addEventListener('input', function() {
+            document.getElementById('top-p-value').textContent = this.value;
+        });
+
+        window.sendMessage = async function() {
+            client = new HfInference(document.getElementById('api-key').value);
+
+            const userInput = document.getElementById('user-input').value;
+            if (userInput.trim() === '') return;
+
+            const lastMessage = conversationHistory[conversationHistory.length - 1];
+            if (lastMessage && lastMessage.role === "user") {
+                lastMessage.content = userInput;
+                updateLastUserMessage(userInput);
+            } else {
+                addMessage('user-message', userInput);
+                conversationHistory.push({ role: "user", content: userInput });
+            }
+
+            document.getElementById('user-input').value = '';
+
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const frequencyPenalty = parseFloat(document.getElementById('frequency-penalty').value);
+            const presencePenalty = parseFloat(document.getElementById('presence-penalty').value);
+            const topP = parseFloat(document.getElementById('top-p').value);
+
+            console.log("Temperature:", temperature);
+            console.log("Frequency Penalty:", frequencyPenalty);
+            console.log("Presence Penalty:", presencePenalty);
+            console.log("Top P:", topP);
+
+            try {
+                const chatCompletion = await client.chatCompletion({
+                    model: document.getElementById('hf-model').value,
+                    messages: conversationHistory,
+                    temperature: temperature,
+                    max_tokens: 256,
+                    top_logprobs: 5,
+                    logprobs: true,
+                    top_p: topP === 1 ? null : (topP === 0 ? 0.01 : topP),
+                    frequency_penalty: frequencyPenalty === 0 ? null : frequencyPenalty,
+                    presence_penalty: presencePenalty === 0 ? null : presencePenalty,
+                });
+
+                console.log(chatCompletion);
+
+                const generatedText = chatCompletion.choices[0].message.content;
+                const logprobs = chatCompletion.choices[0].logprobs.content;
+
+                const highlightedText = logprobs.map(({ token, logprob, top_logprobs }) => {
+                    const probability = Math.exp(logprob);
+                    const red = Math.floor(255 * (1 - probability));
+                    const green = Math.floor(255 * probability);
+                    const alpha = Math.abs(probability - 0.5);
+                    const color = `rgba(${red}, ${green}, 0, ${alpha})`;
+
+                    console.log(top_logprobs)
+
+                    const tooltipContent = top_logprobs.map(({ token, logprob }) => {
+                        const prob = Math.exp(logprob).toFixed(2);
+                        return `${token}: ${prob*100}%`;
+                    }).join('<br>');
+
+                    return `<span class="token" style="background-color: ${color};">${token}<div class="token-tooltip">${tooltipContent}</div></span>`;
+                }).join('');
+
+                addMessage('bot-message', highlightedText);
+
+                conversationHistory.push({ role: "assistant", content: generatedText });
+
+                document.body.classList.toggle('highlight-hidden', !showHighlights);
+                document.getElementById('error-message').textContent = "";
+            } catch (error) {
+                console.error("API call failed:", error);
+                document.getElementById('error-message').textContent = "API call failed. Please check your API key and model.";
+            }
+        }
+
+        function addMessage(className, message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `chat-message ${className}`;
+            messageElement.innerHTML = message;
+
+            const maxWidth = 60;
+            const minWidth = 20;
+            const messageLength = message.length;
+            const widthPercentage = Math.min(maxWidth, Math.max(minWidth, messageLength / 10));
+            messageElement.style.width = `${widthPercentage}%`;
+
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function updateLastUserMessage(message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const lastMessageElement = chatMessages.lastElementChild;
+            if (lastMessageElement && lastMessageElement.classList.contains('user-message')) {
+                lastMessageElement.innerHTML = message;
+            }
+        }
+
+        window.handleKeyPress = function(event) {
+            if (event.key === 'Enter') {
+                window.sendMessage();
+            }
+        }
+
+        window.toggleHighlights = function() {
+            showHighlights = !showHighlights;
+            const toggleButton = document.getElementById('toggle-button');
+            if (showHighlights) {
+                toggleButton.textContent = 'Highlights On';
+                toggleButton.classList.remove('off');
+                toggleButton.classList.add('on');
+            } else {
+                toggleButton.textContent = 'Highlights Off';
+                toggleButton.classList.remove('on');
+                toggleButton.classList.add('off');
+            }
+            document.body.classList.toggle('highlight-hidden', !showHighlights);
+        }
+
+        window.clearHistory = function() {
+            conversationHistory = [];
+            document.getElementById('chat-messages').innerHTML = '';
+            document.getElementById('error-message').textContent = "";
+        }
+    </script>
+</body>
+</html>
